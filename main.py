@@ -28,7 +28,6 @@ def send_voice(id, file_path):
         "attachment": att,
         "random_id": random(-100,100)
     })
-    return res
 
 def spam(id, text):
     while True:
@@ -45,4 +44,30 @@ def spam(id, text):
 
 
 if __name__ == '__main__':
-    pass
+    choice = input('''Выберите тип отправки:
+        1 - голосовое сообщение
+        2 - спам обычными сообщениями
+        ''')
+    match choice:
+        case '1':
+            id = input('Введите id получателя: ')
+            file_path = input('Введите абсолютный путь до файла:\n')
+            if file_path[0] == '"':
+                file_path = file_path[1:-1]
+            if file_path.split('.')[-1] in ['mp3', 'ogg']:
+                file_path = fr'{file_path}'
+                try:
+                    send_voice(int(id), file_path)
+                except ValueError:
+                    print('ID должен состоять из цифр')
+                except vk_api.exceptions.ApiError:
+                    print('Вы не можете отправлять сообщения этому пользователю')
+            else:
+                print('Ваш аудиофайл должен иметь разрешение mp3 или ogg')
+        case '2':
+            id = input('Введите id получателя: ')
+            text = input('Введите сообщение:\n')
+            try:
+                spam(int(id), text)
+            except ValueError:
+                    print('ID должен состоять из цифр')
