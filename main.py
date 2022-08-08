@@ -1,8 +1,9 @@
 import requests
 import vk_api
 
-from key import key
 from random import randint as random
+
+from key import key
 
 
 
@@ -39,18 +40,64 @@ def spam(id, text):
                 })
         except:
             print('У вашего сына обнаружили капчу, он не выживет...')
-            return None
+            choice = input('Вы можете подождать или остановить спам, введя exit: ')
+            if choice.lower() == 'exit':
+                return 0
 
+def dialogs():
+    res = vk.method('messages.getConversations', {'count': 30})
+    last_dialogs = {}
+    ids= ''
+    msg = '\nСписок последних диалогов:\n\n'
+    for i in range(29):
+        id = res['items'][i]['conversation']['peer']['id']
+        ids += f'{id}, '
+    ids = ids[:-2]
+    info = vk.method('users.get', {'user_ids': ids})
+    print('Получаем список последних диалогов...')
+    for j in range(len(info)):
+        user = info[j]
+        last_dialogs[j+1] = user['id']
+        if user['first_name'] != 'DELETED':
+            name = f"{user['first_name']} {user['last_name']}"
+            msg += f'{j+1}. {name}\n'
+        else:
+            title = vk.method('messages.getChatPreview', {'peer_id': user['id']})['preview']['title']
+            msg += f'{j+1}. [беседа] {title}\n'
+    print(msg)
+    return last_dialogs
 
+def select():
+    choice = input('''Получатель:
+    1 - Ввести id получателя
+    2 - Выбрать получателя
+    ''')
+    if choice == '1':
+        id = input('Введите id получателя: ')
+    elif choice == '2':
+        dict_ = dialogs()
+        num = input('Выберите получателя: ')
+        trig = True
+        while trig:
+            try:
+                id = dict_ [int(num)]
+                trig = False
+            except KeyError:
+                print('Некорректный номер получателя, попробуйте ещё раз.')
+                num = input('Выберите получателя: ')
+            except ValueError:
+                print('ID должен состоять из цифр')
+                num = input('Выберите получателя: ')
+    return id
 
 if __name__ == '__main__':
-    choice = input('''Выберите тип отправки:
-        1 - голосовое сообщение
-        2 - спам обычными сообщениями
-        ''')
+    choice = input('''Тип отправки:
+    1 - голосовое сообщение
+    2 - спам обычными сообщениями
+    ''')
     match choice:
         case '1':
-            id = input('Введите id получателя: ')
+            id = select()
             file_path = input('Введите абсолютный путь до файла:\n')
             if file_path[0] == '"':
                 file_path = file_path[1:-1]
@@ -65,9 +112,11 @@ if __name__ == '__main__':
             else:
                 print('Ваш аудиофайл должен иметь разрешение mp3 или ogg')
         case '2':
-            id = input('Введите id получателя: ')
+            id = select()
             text = input('Введите сообщение:\n')
             try:
                 spam(int(id), text)
             except ValueError:
                     print('ID должен состоять из цифр')
+            except vk_api.exceptions.ApiError:
+                    print('Вы не можете отправлять сообщения этому пользователю')
