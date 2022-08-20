@@ -53,7 +53,7 @@ def dialogs():
         id = res['items'][i]['conversation']['peer']['id']
         ids += f'{id}, '
     ids = ids[:-2]
-    info = vk.method('users.get', {'user_ids': ids})
+    info = vk.method('users.get', {'user_ids': ids, 'lang': 'ru'})
     print('Получаем список последних диалогов...')
     for j in range(len(info)):
         user = info[j]
@@ -89,6 +89,8 @@ def select():
                 print('ID должен состоять из цифр')
                 num = input('Выберите получателя: ')
     return id
+
+
 
 if __name__ == '__main__':
     choice = input('''Тип отправки:
