@@ -243,9 +243,9 @@ def select_menu():
     elif sel == '2':
         while True:
             file_path = input('Введите абсолютный путь до файла:\n')
-            if os.path.exists(file_path):
-                if file_path[0] == '"':
-                    file_path = file_path[1:-1]
+            if file_path[0] == '"':
+                file_path = file_path[1:-1]
+            if os.path.exists(fr'{file_path}'):
                 if file_path.split('.')[-1] in ['mp3', 'ogg']:
                     file_path = fr'{file_path}'
                     return file_path
